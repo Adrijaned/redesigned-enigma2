@@ -6,6 +6,8 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Repository
 public class SurfaceTypeDao extends AbstractDao<SurfaceType> {
@@ -23,5 +25,10 @@ public class SurfaceTypeDao extends AbstractDao<SurfaceType> {
     @Transactional
     public SurfaceType save(SurfaceType entity) {
         return super.save(entity);
+    }
+
+    @Override
+    public List<SurfaceType> list() {
+        return entityManager.createQuery("select st from SurfaceType st where st.valid = true", SurfaceType.class).getResultList();
     }
 }

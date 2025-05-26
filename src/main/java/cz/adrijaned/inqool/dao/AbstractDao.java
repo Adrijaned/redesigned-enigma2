@@ -2,7 +2,6 @@ package cz.adrijaned.inqool.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -18,10 +17,6 @@ public abstract class AbstractDao<T> {
     public T save(T entity){
         entityManager.persist(entity);
         return entity;
-    }
-
-    public void delete(T entity){
-        entityManager.remove(entity);
     }
 
     public T find(long id){

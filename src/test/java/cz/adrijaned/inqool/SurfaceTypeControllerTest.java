@@ -4,13 +4,11 @@ import cz.adrijaned.inqool.controller.SurfaceTypeController;
 import cz.adrijaned.inqool.dao.SurfaceTypeDao;
 import cz.adrijaned.inqool.dto.SurfaceTypeSimplifiedDto;
 import cz.adrijaned.inqool.entities.SurfaceType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,7 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class SurfaceTypeControllerTest {
@@ -78,9 +77,20 @@ public class SurfaceTypeControllerTest {
     }
 
     @Test
+    public void test400WhenUpdatingDeleted() {
+        var mocked = mock(SurfaceType.class);
+        when(surfaceTypeDao.find(anyLong())).thenReturn(mocked);
+        when(mocked.isValid()).thenReturn(false);
+        var data = new SurfaceTypeSimplifiedDto();
+        ResponseStatusException exc = assertThrows(ResponseStatusException.class, () -> surfaceTypeController.putSurfaceType(1L, data));
+        assertEquals(HttpStatus.BAD_REQUEST, exc.getStatusCode());
+    }
+
+    @Test
     public void testUpdatingAllSuppliedFieldsAndNothingElse() {
         SurfaceType mocked = mock(SurfaceType.class);
         when(surfaceTypeDao.find(1L)).thenReturn(mocked);
+        when(mocked.isValid()).thenReturn(true);
         SurfaceTypeSimplifiedDto data;
 
         data = new SurfaceTypeSimplifiedDto();
@@ -106,5 +116,32 @@ public class SurfaceTypeControllerTest {
         surfaceTypeController.putSurfaceType(1L, data);
         verify(mocked, times(2)).setMinutePrice(any());
         verify(mocked, times(2)).setName(any());
+    }
+
+    @Test
+    public void testDeletingUnknownSurfaceTypeFailsWith400() {
+        when(surfaceTypeDao.find(anyLong())).thenReturn(null);
+        ResponseStatusException exc = assertThrows(ResponseStatusException.class, () -> surfaceTypeController.deleteSurfaceType(5L));
+        assertEquals(HttpStatus.NOT_FOUND, exc.getStatusCode());
+    }
+
+    @Test
+    public void testDeletingAlreadyDeletedFailsWith404() {
+        SurfaceType surfaceType = new SurfaceType();
+        surfaceType.setValid(false);
+        when(surfaceTypeDao.find(anyLong())).thenReturn(surfaceType);
+        ResponseStatusException exc = assertThrows(ResponseStatusException.class, () -> surfaceTypeController.deleteSurfaceType(5L));
+        assertEquals(HttpStatus.BAD_REQUEST, exc.getStatusCode());
+    }
+
+    @Test
+    public void testDeletingWorks() {
+        SurfaceType surfaceType = mock(SurfaceType.class);
+        when(surfaceTypeDao.find(1L)).thenReturn(surfaceType);
+        when(surfaceType.isValid()).thenReturn(true);
+        surfaceTypeController.deleteSurfaceType(1L);
+        verify(surfaceTypeDao, times(1)).find(1L);
+        verify(surfaceType, times(1)).setValid(false);
+        verify(surfaceTypeDao, times(1)).save(surfaceType);
     }
 }

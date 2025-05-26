@@ -20,6 +20,9 @@ public class SurfaceType {
     @Column(nullable = false, precision = 5, scale = 2)
     @Getter
     private BigDecimal minutePrice;
+    @Getter
+    @Setter
+    private boolean valid = true;
 
     public SurfaceType(BigDecimal minutePrice, String name) {
         this.minutePrice = minutePrice;
@@ -29,7 +32,7 @@ public class SurfaceType {
     public void setMinutePrice(BigDecimal minutePrice) {
         minutePrice = minutePrice.stripTrailingZeros();
         if (minutePrice.scale() > 2 || minutePrice.precision() > 5) {
-            //TODO throw
+            throw new IllegalArgumentException();
         }
         this.minutePrice = minutePrice;
     }
