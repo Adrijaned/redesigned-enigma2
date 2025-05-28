@@ -19,6 +19,9 @@ public abstract class AbstractDao<T> {
         return entity;
     }
 
+    /**
+     * @return The found entity, or null if not found
+     */
     public T find(long id){
         return entityManager.find(entityClass, id);
     }

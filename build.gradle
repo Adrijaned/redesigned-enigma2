@@ -27,6 +27,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework:spring-orm'
 	implementation 'org.springframework:spring-jdbc'
+	implementation("com.googlecode.libphonenumber:libphonenumber:9.0.6")
 	implementation 'org.hibernate:hibernate-core:7.0.0.Final'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
