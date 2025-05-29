@@ -22,7 +22,7 @@ public abstract class AbstractDao<T> {
     /**
      * @return The found entity, or null if not found
      */
-    public T find(long id){
+    public T find(Long id){
         return entityManager.find(entityClass, id);
     }
 

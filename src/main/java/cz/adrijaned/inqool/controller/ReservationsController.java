@@ -8,7 +8,6 @@ import cz.adrijaned.inqool.dto.ReservationDto;
 import cz.adrijaned.inqool.entities.Court;
 import cz.adrijaned.inqool.entities.Reservation;
 import cz.adrijaned.inqool.entities.User;
-import cz.adrijaned.inqool.util._PhoneNumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -82,9 +81,9 @@ public class ReservationsController {
 
     private static void setReservationFromToTimes(ReservationDto newReservation, Reservation reservation) {
         try {
-            LocalDateTime baseDate = LocalDateTime.parse(newReservation.getReservationDate(), DateTimeFormatter.ISO_LOCAL_DATE);
-            LocalDateTime fromDateTime = baseDate.plus(Duration.between(LocalTime.MIN, LocalTime.parse(newReservation.getFromTime(), DateTimeFormatter.ofPattern("HH:mm"))));
-            LocalDateTime toDateTime = baseDate.plus(Duration.between(LocalTime.MIN, LocalTime.parse(newReservation.getToTime(), DateTimeFormatter.ofPattern("HH:mm"))));
+            LocalDateTime baseDate = LocalDateTime.of(LocalDate.parse(newReservation.getReservationDate(), DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.MIN);
+            LocalDateTime fromDateTime = baseDate.plus(Duration.between(LocalTime.MIN, LocalTime.parse(newReservation.getFromTime(), DateTimeFormatter.ofPattern("H:m"))));
+            LocalDateTime toDateTime = baseDate.plus(Duration.between(LocalTime.MIN, LocalTime.parse(newReservation.getToTime(), DateTimeFormatter.ofPattern("H:m"))));
             if (toDateTime.isBefore(fromDateTime)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reservation TO is before reservation FROM");
             }
@@ -97,11 +96,10 @@ public class ReservationsController {
 
     private void setReservationUser(ReservationDto newReservation, Reservation reservation) {
         try {
-            String formatted = _PhoneNumberUtil.normalizePhoneNumber(newReservation.getPhoneNumber());
-            User user = userDao.findByPhoneNumber(formatted).orElse(new User(formatted));
+            User user = userDao.findByPhoneNumber(newReservation.getPhoneNumber()).orElse(new User(newReservation.getPhoneNumber()));
             if (!newReservation.getUserName().equals(user.getName())) {
                 user.setName(newReservation.getUserName());
-                userDao.save(user);
+                userDao.saveUser(user);
             }
             reservation.setUser(user);
         } catch (NumberParseException e) {
@@ -137,13 +135,18 @@ public class ReservationsController {
         if (newValues.getPhoneNumber() != null) {
             if (newValues.getUserName() == null) {
                 newValues.setUserName(reservation.getUser().getName());
-                setReservationUser(newValues, reservation);
             }
+            setReservationUser(newValues, reservation);
         }
         if (newValues.getUserName() != null) {
-            if (!reservation.getUser().getName().equals(newValues.getUserName())) {
-                reservation.getUser().setName(newValues.getUserName());
-                userDao.save(reservation.getUser());
+            User user = reservation.getUser();
+            if (!user.getName().equals(newValues.getUserName())) {
+                user.setName(newValues.getUserName());
+                try {
+                    userDao.saveUser(user);
+                } catch (NumberParseException e) {
+                    throw new RuntimeException("Error parsing phone number guaranteed to be in correct format, some logic somewhere is broken");
+                }
             }
         }
         if (newValues.getCourtId() != null) {

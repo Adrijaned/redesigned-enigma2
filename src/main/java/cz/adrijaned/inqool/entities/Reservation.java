@@ -16,6 +16,7 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Getter
+    @Setter
     private long id;
     @ManyToOne(optional = false)
     @Getter
@@ -43,13 +44,6 @@ public class Reservation {
     @Setter
     @ManyToOne(optional = false)
     private User user;
-
-    public Reservation(Court court, GameType gameType, LocalDateTime fromTime, LocalDateTime toTime) {
-        this.court = court;
-        this.gameType = gameType;
-        this.fromTime = fromTime;
-        this.toTime = toTime;
-    }
 
     public BigDecimal getPrice() {
         long minutes = (toTime.toEpochSecond(ZoneOffset.UTC) - fromTime.toEpochSecond(ZoneOffset.UTC)) / 60;

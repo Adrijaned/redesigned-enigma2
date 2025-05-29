@@ -1,6 +1,5 @@
-package cz.adrijaned.inqool;
+package cz.adrijaned.inqool.controller;
 
-import cz.adrijaned.inqool.controller.SurfaceTypeController;
 import cz.adrijaned.inqool.dao.SurfaceTypeDao;
 import cz.adrijaned.inqool.dto.SurfaceTypeSimplifiedDto;
 import cz.adrijaned.inqool.entities.SurfaceType;

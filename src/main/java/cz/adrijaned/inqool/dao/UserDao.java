@@ -13,32 +13,31 @@ import java.util.Optional;
 
 
 @Repository
-public class UserDao extends AbstractDao<User> {
-
-    protected UserDao() {
-        super(User.class);
-    }
+public class UserDao {
 
     @PersistenceContext
-    private void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    private EntityManager entityManager;
+
+    public User find(Long id) {
+        return entityManager.find(User.class, id);
     }
 
-    @Override
     @Transactional
-    public User save(User entity) {
-        return super.save(entity);
+    public User saveUser(User entity) throws NumberParseException {
+        System.out.println(entity.toString());
+        entity.setPhoneNumber(_PhoneNumberUtil.normalizePhoneNumber(entity.getPhoneNumber()));
+        entityManager.persist(entity);
+        return entity;
     }
 
     public Optional<User> findByPhoneNumber(String phoneNumber) throws NumberParseException {
         String formatted = _PhoneNumberUtil.normalizePhoneNumber(phoneNumber);
-        return entityManager.createQuery("select u from User u where u.phoneNumber = :phoneNumber", User.class)
+        return entityManager.createQuery("select u from Users u where u.phoneNumber = :phoneNumber", User.class)
                 .setParameter("phoneNumber", formatted)
-                .getResultStream().findAny();
+                .getResultList().stream().findAny();
     }
 
-    @Override
     public List<User> list() {
-        return entityManager.createQuery("select u from User u where u.valid = true", User.class).getResultList();
+        return entityManager.createQuery("select u from Users u where u.valid = true", User.class).getResultList();
     }
 }

@@ -7,7 +7,7 @@ import com.google.i18n.phonenumbers.Phonenumber;
 public class _PhoneNumberUtil {
     public static String normalizePhoneNumber(String phoneNumber) throws NumberParseException {
         PhoneNumberUtil numberUtil = PhoneNumberUtil.getInstance();
-        Phonenumber.PhoneNumber parsed = numberUtil.parse(phoneNumber, "+420");
+        Phonenumber.PhoneNumber parsed = numberUtil.parse(phoneNumber, "CZ");
         if (!numberUtil.isValidNumber(parsed)) {
             throw new NumberParseException(NumberParseException.ErrorType.NOT_A_NUMBER, "");
         }
